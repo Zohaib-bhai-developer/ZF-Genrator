@@ -19,7 +19,6 @@ export default function CursorEffect() {
     };
 
     window.addEventListener('mousemove', moveCursor);
-
     return () => {
       window.removeEventListener('mousemove', moveCursor);
       document.body.removeChild(cursor);
