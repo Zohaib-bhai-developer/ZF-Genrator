@@ -1,31 +1,25 @@
+import OpenAI from "openai";
+
 export default async function handler(req, res) {
-  if (req.method !== "POST")
-    return res.status(405).json({ error: "Method not allowed" });
-
-  const { prompt } = req.body;
-  if (!prompt) return res.status(400).json({ error: "Prompt is required" });
-
   try {
-    const response = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        prompt,
-        n: 1,
-        size: "1024x1024",
-      }),
+    const { prompt } = req.body;
+
+    const client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
     });
 
-    const data = await response.json();
+    const result = await client.images.generate({
+      model: "gpt-image-1",
+      prompt: prompt,
+      size: "1024x1024"
+    });
 
-    if (data.error) return res.status(500).json({ error: data.error.message });
+    res.status(200).json({
+      imageUrl: result.data[0].url
+    });
 
-    res.status(200).json({ imageUrl: data.data[0].url });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Image generation failed" });
+    console.error("Server error:", err);
+    res.status(500).json({ error: "Backend error" });
   }
 }
